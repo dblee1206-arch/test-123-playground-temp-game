@@ -1,80 +1,70 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>스토리 RPG</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Story RPG</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-size: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
 
-<style>
-  body {
-    margin: 0;
-    background: #000;
-    color: #fff;
-    font-family: "Noto Sans KR", sans-serif;
-  }
+    #game {
+      width: 90%;
+      max-width: 600px;
+    }
 
-  #game {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-  }
-
-  #textbox {
-    width: 90%;
-    min-height: 140px;
-    background: rgba(0,0,0,0.7);
-    border: 2px solid #fff;
-    padding: 16px;
-    box-sizing: border-box;
-    font-size: 16px;
-    line-height: 1.6;
-  }
-
-  #hint {
-    text-align: right;
-    font-size: 12px;
-    opacity: 0.6;
-  }
-</style>
+    #startMessage {
+      opacity: 0.8;
+    }
+  </style>
 </head>
-
 <body>
 
 <div id="game">
-  <div id="textbox" onclick="nextLine()">
-    <div id="text"></div>
-    <div id="hint">화면을 터치하세요</div>
-  </div>
+  <div id="startMessage">화면을 터치하세요</div>
+  <div id="text"></div>
 </div>
 
 <script>
   const story = [
-    "비가 내린 다음 날의 공기는 언제나 눅눅했다.",
-    "도서관 창문 밖으로 보이는 회색 하늘을 잠시 바라보다가,",
-    "해환은 책상 위에 놓인 낡은 책으로 시선을 돌렸다.",
-    "표지는 바래 있었고, 제목은 거의 지워져 있었다.",
-    "하지만 묘하게도, 그 책에서 눈을 뗄 수가 없었다.",
-    "책의 첫 장에는 이렇게 적혀 있었다.",
-    "“사건 번호 - 0”",
-    "해환은 숨을 삼켰다.",
-    "이상한 예감이 들었다."
+    "늦은 오후, 도서관의 공기는 언제나와 같이 묘하게 눅눅했다.",
+    "",
+    "오래된 책 냄새와 형광등이 내뿜는 희미한 열기, 그리고 시험기간을 앞둔 학생들의 한숨이 뒤섞여 묵직한 공기를 만들고 있었다.",
+    "",
+    "그는 고개를 떨군 채 노트북 화면을 뚫어져라 바라보고 있었다."
+    
   ];
 
   let index = 0;
+  let hasStarted = false;
 
-  function nextLine() {
-    if (index < story.length) {
-      document.getElementById("text").innerText = story[index];
+  const textDiv = document.getElementById("text");
+  const startMessage = document.getElementById("startMessage");
+
+  document.body.addEventListener("click", () => {
+    // 첫 터치
+    if (!hasStarted) {
+      hasStarted = true;
+      startMessage.style.display = "none";
+      textDiv.textContent = story[index];
       index++;
-    } else {
-      document.getElementById("text").innerText = "― 계속 ―";
+      return;
     }
-  }
 
-  // 처음 한 줄 표시
-  nextLine();
+    // 이후 터치
+    if (index < story.length) {
+      textDiv.textContent = story[index];
+      index++;
+    }
+  });
 </script>
 
 </body>
