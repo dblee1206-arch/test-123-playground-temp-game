@@ -1,78 +1,60 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Hybrid Dialogue</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story RPG</title>
 <style>
-  body{margin:0;background:#000;color:#fff;font-family:sans-serif}
-  #wrap{padding:12px}
-  #log{min-height:60vh}
-  .me{opacity:.9}
-  .npc{opacity:.95}
-  #ui{display:flex;gap:6px}
-  input{flex:1}
+  body {
+    margin: 0;
+    background: black;
+    color: white;
+    font-family: sans-serif;
+  }
+  #game {
+    padding: 20px;
+    min-height: 100vh;
+  }
+  #hint {
+    opacity: 0.6;
+    font-size: 14px;
+    margin-top: 20px;
+  }
 </style>
 </head>
 <body>
-<div id="wrap">
-  <div id="log"></div>
-  <div id="ui">
-    <button onclick="setMode('story')">스토리</button>
-    <button onclick="setMode('free')">자유</button>
-    <input id="msg" placeholder="말해보세요"/>
-    <button onclick="send()">전송</button>
-  </div>
+
+<div id="game">
+  <div id="text"></div>
+  <div id="hint">화면을 터치하세요</div>
 </div>
 
 <script>
-let mode = "story"; // story | free
-const log = document.getElementById("log");
+const story = [
+  "늦은 오후, 도서관의 공기는 언제나와 같이 묘하게 눅눅했다.",
+  "오래된 책 냄새와 형광등의 열기가 뒤섞여 있었다.",
+  "그는 고개를 떨군 채 노트북 화면을 바라보고 있었다.",
+  "과제는 끝났다. 이제 좀 쉴 수 있겠네.",
+  "…그때, 구석 서가에서 이상한 책 한 권이 눈에 들어왔다."
+];
 
-function setMode(m){ mode=m; print(`모드 전환: ${m}`, "npc"); }
+let index = 0;
+const textDiv = document.getElementById("text");
+const hint = document.getElementById("hint");
 
-function print(t, cls){
-  const p=document.createElement("p");
-  p.className=cls;
-  p.textContent=t;
-  log.appendChild(p);
-  window.scrollTo(0, document.body.scrollHeight);
-}
+function nextText() {
+  if (index === 0) hint.style.display = "none";
 
-// ---- 스토리용(규칙 AI)
-function storyAI(text){
-  if(text.includes("책")) return "그 책을 어디서 봤지?";
-  if(text.includes("도서관")) return "이 시간의 도서관은 조용하지.";
-  if(text.includes("사건")) return "번호가 붙은 사건은 보통 숨겨진다.";
-  return "…그건 아직 말할 수 없어.";
-}
-
-// ---- 자유대화(API)
-async function freeAI(text){
-  const r = await fetch("/chat", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({message:text})
-  });
-  const d = await r.json();
-  return d.reply;
-}
-
-async function send(){
-  const input=document.getElementById("msg");
-  const text=input.value.trim();
-  if(!text) return;
-  print("나: "+text, "me");
-  input.value="";
-
-  if(mode==="story"){
-    print("상대: "+storyAI(text), "npc");
-  }else{
-    print("상대: …", "npc");
-    const reply = await freeAI(text);
-    log.lastChild.textContent = "상대: "+reply;
+  if (index < story.length) {
+    const p = document.createElement("p");
+    p.textContent = story[index];
+    textDiv.appendChild(p);
+    index++;
   }
 }
+
+document.body.addEventListener("click", nextText);
 </script>
+
 </body>
 </html>
