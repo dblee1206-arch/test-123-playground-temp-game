@@ -1,170 +1,182 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>탈출</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Text RPG</title>
 <style>
     body {
         margin: 0;
         background: black;
         color: white;
-        font-family: "Noto Sans KR", sans-serif;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
+        font-family: monospace;
+        padding: 16px;
     }
-    #story {
-        flex: 1;
-        padding: 20px;
-        overflow-y: auto;
-        white-space: pre-wrap;
+    #text {
+        white-space: pre-line;
+        min-height: 70vh;
     }
-    #inputArea {
+    #inputBox {
         display: flex;
-        border-top: 1px solid #333;
+        gap: 8px;
     }
     input {
         flex: 1;
-        padding: 15px;
-        font-size: 16px;
         background: black;
         color: white;
-        border: none;
-        outline: none;
+        border: 1px solid white;
+        padding: 8px;
+        font-size: 16px;
     }
     button {
-        padding: 15px;
-        background: #111;
+        background: black;
         color: white;
-        border: none;
+        border: 1px solid white;
+        padding: 8px 12px;
         font-size: 16px;
     }
 </style>
 </head>
 <body>
 
-<div id="story"></div>
+<div id="text"></div>
 
-<div id="inputArea">
-    <input id="command" placeholder="행동을 입력하세요" autocomplete="off">
-    <button onclick="submitCommand()">▶</button>
+<div id="inputBox">
+    <input id="command" placeholder="행동을 입력하세요"/>
+    <button onclick="submit()">확인</button>
 </div>
 
 <script>
-const story = document.getElementById("story");
+const textEl = document.getElementById("text");
 const input = document.getElementById("command");
 
-let visionRecovered = false;
+let isTyping = false;
 let gameOver = false;
+let visionRecovered = false;
 
-// 타자 효과
 function typeText(text, callback) {
+    isTyping = true;
     let i = 0;
     const interval = setInterval(() => {
-        story.innerHTML += text.charAt(i);
-        story.scrollTop = story.scrollHeight;
+        textEl.innerHTML += text[i];
         i++;
         if (i >= text.length) {
             clearInterval(interval);
-            story.innerHTML += "\n\n";
+            textEl.innerHTML += "\n\n";
+            isTyping = false;
             if (callback) callback();
         }
-    }, 30);
+    }, 40);
 }
 
-// 초기 문장
-typeText("아무것도 보이지 않는다.");
-typeText("눈을 뜨고 있는지조차 확신할 수 없다.");
+function startGame() {
+    typeText("아무것도 보이지 않는다.", () => {
+        typeText("눈을 뜨고 있는지조차 확신할 수 없다.");
+    });
+}
 
-function submitCommand() {
-    if (gameOver) return;
+const actions = [
+    {
+        keys: ["눈을 뜬다"],
+        result: "눈을 떴지만 아무것도 보이지 않는다."
+    },
+    {
+        keys: ["눈을 깜빡인다"],
+        result: "아무 일도 일어나지 않는다."
+    },
+    {
+        keys: ["몸을 움직여지는 지 확인 해본다", "몸을 움직인다"],
+        result: "양손은 움직일 수 있는듯 하다."
+    },
+    {
+        keys: ["손을 움직인다"],
+        result: "손가락을 쥐어다 핀다."
+    },
+    {
+        keys: ["발을 움직인다"],
+        result: "무언가에 구속되어 있는 듯하다.."
+    },
+    {
+        keys: ["숨을 쉰다", "호흡을 한다"],
+        result: "숨을 들이마시고 내쉬었다.\n... 아무 일도 일어나지 않는다."
+    },
+    {
+        keys: ["심장이 뛰는 지 확인한다"],
+        result: "심장이 뛰고 있다."
+    },
+    {
+        keys: ["기억을 떠올린다", "마지막 기억을 생각한다"],
+        result: "아직 머리 속이 흐릿해서 잘 기억이 나지않는다..\n한가지 단어가 떠오른다. 베개.."
+    },
+    {
+        keys: ["귀를 기울인다", "소리를 듣는다"],
+        result: "작게 흥얼거리는 휫바람 소리가 들린다."
+    },
+    {
+        keys: ["냄새를 맡는다"],
+        result: "아무 냄새도 나지 않는다."
+    },
+    {
+        keys: ["주변을 살펴본다", "주위를 살펴본다"],
+        result: () => {
+            if (!visionRecovered) {
+                return "어두워서 볼 수 없다.";
+            }
+            return "어디를 살펴보겠습니까?\n왼쪽. 오른쪽. 앞. 뒤. 나.";
+        }
+    },
+    {
+        keys: ["왼쪽을 살펴본다"],
+        result: "세면대와 변기가 보인다."
+    },
+    {
+        keys: ["오른쪽을 살펴본다", "오른쪽"],
+        result: "한 남성이 쓰러져 있다."
+    },
+    {
+        keys: ["앞을 살펴본다", "앞"],
+        result: "방문이 보인다."
+    },
+    {
+        keys: ["뒤를 살펴본다", "뒤"],
+        result: "손목 하나가 들어갈 정도로 작은 창문이 보인다."
+    },
+    {
+        keys: ["나를 살펴본다", "나"],
+        result: "아쉽게도 현재 거울이 없어 나의 얼굴을 보지 못한다."
+    },
+    {
+        keys: ["소리를 친다", "도움을 요청한다"],
+        result: () => {
+            gameOver = true;
+            return "당신은 큰소리로 도와주세요라고 외친다.\n쿵쿵대는 소리와 함께 방문이 열린다.\n\"그 입을 꼬매서 시끄러운 입으로 다신 못 말하게 해주지.\"\n\nGAME OVER";
+        }
+    }
+];
 
-    const cmd = input.value.trim();
-    if (!cmd) return;
+function submit() {
+    if (isTyping || gameOver) return;
+
+    const value = input.value.trim();
     input.value = "";
 
-    story.innerHTML += `> ${cmd}\n`;
-    story.scrollTop = story.scrollHeight;
+    let action = actions.find(a =>
+        a.keys.some(k => value.includes(k))
+    );
 
-    handleCommand(cmd);
-}
-
-function handleCommand(cmd) {
-    // 게임 오버 행동
-    if (cmd.includes("소리") || cmd.includes("도움")) {
-        typeText("당신은 큰소리로 도와주세요라고 외친다.");
-        typeText("그러자 쿵쿵대는 소리와 함께 방문이 열린다.");
-        typeText("“그 입을 꼬매서 시끄러운 입으로 다신 못 말하게 해주지.”");
-        typeText("GAME OVER");
-        gameOver = true;
+    if (!action) {
+        typeText("아무 일도 일어나지 않는다.");
         return;
     }
 
-    // 행동 매핑
-    const actions = [
-        { keys: ["눈을 뜬다"], text: "눈을 떴지만 아무것도 보이지 않는다." },
-        { keys: ["눈을 깜빡"], text: "아무 일도 일어나지 않는다." },
-        { keys: ["몸", "움직"], text: "양손은 움직일 수 있는듯 하다." },
-        { keys: ["손"], text: "손가락을 쥐어다 핀다." },
-        { keys: ["발"], text: "무언가에 구속되어 있는 듯하다.." },
-        { keys: ["숨", "호흡"], text: "숨을 들이마시고 내쉬었다.\n... 아무 일도 일어나지 않는다." },
-        { keys: ["심장"], text: "심장이 뛰고 있다." },
-        { keys: ["귀", "소리"], text: "작게 흥얼거리는 휫바람 소리가 들린다." },
-        { keys: ["냄새"], text: "아무 냄새도 나지 않는다." },
-        { keys: ["기억", "마지막"], text: "아직 머리 속이 흐릿해서 잘 기억이 나지않는다..\n한가지 단어가 떠오른다.\n베개.." },
-    ];
+    let resultText = typeof action.result === "function"
+        ? action.result()
+        : action.result;
 
-    // 주변 살피기
-    if (cmd.includes("주변") || cmd.includes("주위")) {
-        if (!visionRecovered) {
-            visionRecovered = true;
-            typeText("어두워서 볼 수 없다.");
-        } else {
-            typeText("어디를 살펴보겠습니까?\n왼쪽. 오른쪽. 앞. 뒤. 나.");
-        }
-        return;
-    }
-
-    if (visionRecovered) {
-        if (cmd.includes("왼쪽")) {
-            typeText("세면대와 변기가 보인다.");
-            return;
-        }
-        if (cmd.includes("오른쪽")) {
-            typeText("한 남성이 쓰러져 있다.");
-            return;
-        }
-        if (cmd.includes("앞")) {
-            typeText("방문이 보인다.");
-            return;
-        }
-        if (cmd.includes("뒤")) {
-            typeText("손목 하나가 들어갈 정도로 작은 창문이 보인다.");
-            return;
-        }
-        if (cmd === "나") {
-            typeText("아쉽게도 현재 거울이 없어 나의 얼굴을 보지 못한다.");
-            return;
-        }
-    }
-
-    // 일반 행동 처리
-    for (const act of actions) {
-        if (act.keys.some(k => cmd.includes(k))) {
-            typeText(act.text);
-            return;
-        }
-    }
-
-    // 기본 반응
-    typeText("아무 일도 일어나지 않는다.");
+    typeText(resultText);
 }
 
-// 엔터키 입력
-input.addEventListener("keydown", e => {
-    if (e.key === "Enter") submitCommand();
-});
+startGame();
 </script>
 
 </body>
