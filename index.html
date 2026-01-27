@@ -1,1 +1,68 @@
-test
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>내 웹 게임</title>
+<style>
+  body {
+    background: #111;
+    color: white;
+    font-family: sans-serif;
+    text-align: center;
+    margin-top: 80px;
+  }
+  button {
+    font-size: 20px;
+    padding: 10px 20px;
+    margin: 10px;
+  }
+</style>
+</head>
+<body>
+
+<h1>⚔️ 내 게임</h1>
+
+<div id="menu">
+  <button onclick="startGame()">시작</button>
+  <button onclick="loadGame()">불러오기</button>
+</div>
+
+<div id="game" style="display:none;">
+  <p>게임 중...</p>
+  <p>점수: <span id="score">0</span></p>
+  <button onclick="addScore()">점수 +1</button><br><br>
+  <button onclick="saveGame()">저장</button>
+</div>
+
+<script>
+let score = 0;
+
+function startGame() {
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("game").style.display = "block";
+}
+
+function addScore() {
+  score++;
+  document.getElementById("score").innerText = score;
+}
+
+function saveGame() {
+  localStorage.setItem("saveScore", score);
+  alert("저장됨!");
+}
+
+function loadGame() {
+  const saved = localStorage.getItem("saveScore");
+  if (saved !== null) {
+    score = Number(saved);
+    startGame();
+    document.getElementById("score").innerText = score;
+  } else {
+    alert("저장 데이터 없음");
+  }
+}
+</script>
+
+</body>
+</html>
