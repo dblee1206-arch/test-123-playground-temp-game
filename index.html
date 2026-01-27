@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Text RPG</title>
 <style>
     body {
@@ -9,87 +10,70 @@
         background: black;
         color: white;
         font-family: monospace;
+        padding: 16px;
     }
-    #game {
-        padding: 20px;
-        height: 90vh;
-        overflow-y: auto;
+    #text {
         white-space: pre-line;
+        min-height: 70vh;
     }
     #inputBox {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        background: black;
-        padding: 10px;
-        box-sizing: border-box;
+        display: flex;
+        gap: 8px;
     }
     input {
-        width: 100%;
+        flex: 1;
         background: black;
         color: white;
-        border: none;
-        border-top: 1px solid #444;
+        border: 1px solid white;
+        padding: 8px;
         font-size: 16px;
-        outline: none;
     }
-    .player {
-        color: #aaa;
+    button {
+        background: black;
+        color: white;
+        border: 1px solid white;
+        padding: 8px 12px;
+        font-size: 16px;
     }
 </style>
 </head>
 <body>
 
-<div id="game"></div>
+<div id="text"></div>
 
 <div id="inputBox">
-    <input id="input" placeholder="행동을 입력하세요" />
+    <input id="command" placeholder="행동을 입력하세요"/>
+    <button onclick="submit()">확인</button>
 </div>
 
 <script>
-const game = document.getElementById("game");
-const input = document.getElementById("input");
+const textEl = document.getElementById("text");
+const input = document.getElementById("command");
 
-let typing = false;
-let vision = false;
+let isTyping = false;
 let gameOver = false;
-
-// 초기 문장
-const intro = [
-    "아무것도 보이지 않는다.",
-    "눈을 뜨고 있는지조차 확신할 수 없다."
-];
-
-let introIndex = 0;
+let visionRecovered = false;
 
 function typeText(text, callback) {
-    typing = true;
+    isTyping = true;
     let i = 0;
-    let line = "";
-    game.innerHTML += "\n";
     const interval = setInterval(() => {
-        line += text[i];
-        game.innerHTML = game.innerHTML.slice(0, -line.length) + line;
+        textEl.innerHTML += text[i];
         i++;
-        game.scrollTop = game.scrollHeight;
         if (i >= text.length) {
             clearInterval(interval);
-            typing = false;
+            textEl.innerHTML += "\n\n";
+            isTyping = false;
             if (callback) callback();
         }
-    }, 30);
+    }, 40);
 }
 
-function startIntro() {
-    if (introIndex < intro.length) {
-        typeText(intro[introIndex], () => {
-            introIndex++;
-            startIntro();
-        });
-    }
+function startGame() {
+    typeText("아무것도 보이지 않는다.", () => {
+        typeText("눈을 뜨고 있는지조차 확신할 수 없다.");
+    });
 }
-
-startIntro();
 
 const actions = [
     {
@@ -101,82 +85,80 @@ const actions = [
         result: "아무 일도 일어나지 않는다."
     },
     {
-        keys: ["몸을 움직", "몸을 움직여"],
+        keys: ["몸을 움직여지는 지 확인 해본다", "몸을 움직인다"],
         result: "양손은 움직일 수 있는듯 하다."
     },
     {
-        keys: ["손을 움직"],
+        keys: ["손을 움직인다"],
         result: "손가락을 쥐어다 핀다."
     },
     {
-        keys: ["발을 움직"],
+        keys: ["발을 움직인다"],
         result: "무언가에 구속되어 있는 듯하다.."
     },
     {
-        keys: ["숨을", "호흡"],
+        keys: ["숨을 쉰다", "호흡을 한다"],
         result: "숨을 들이마시고 내쉬었다.\n... 아무 일도 일어나지 않는다."
     },
     {
-        keys: ["심장"],
+        keys: ["심장이 뛰는 지 확인한다"],
         result: "심장이 뛰고 있다."
     },
     {
-        keys: ["주변", "주위"],
-        result: () => {
-            if (!vision) return "어두워서 볼 수 없다.";
-            return "어디를 살펴보겠습니까?\n왼쪽 / 오른쪽 / 앞 / 뒤 / 나";
-        }
+        keys: ["기억을 떠올린다", "마지막 기억을 생각한다"],
+        result: "아직 머리 속이 흐릿해서 잘 기억이 나지않는다..\n한가지 단어가 떠오른다. 베개.."
     },
     {
-        keys: ["왼쪽"],
-        result: "세면대와 변기가 보인다."
+        keys: ["귀를 기울인다", "소리를 듣는다"],
+        result: "작게 흥얼거리는 휫바람 소리가 들린다."
     },
     {
-        keys: ["오른쪽"],
-        result: "한 남성이 쓰러져 있다."
-    },
-    {
-        keys: ["앞"],
-        result: "방문이 보인다."
-    },
-    {
-        keys: ["뒤"],
-        result: "손목 하나가 들어갈 정도로 작은 창문이 보인다."
-    },
-    {
-        keys: ["나"],
-        result: "아쉽게도 현재 거울이 없어 나의 얼굴을 보지 못한다."
-    },
-    {
-        keys: ["귀", "소리"],
-        result: "작게 흥얼거리는 휘파람 소리가 들린다."
-    },
-    {
-        keys: ["냄새"],
+        keys: ["냄새를 맡는다"],
         result: "아무 냄새도 나지 않는다."
     },
     {
-        keys: ["소리쳐", "도와", "외친"],
+        keys: ["주변을 살펴본다", "주위를 살펴본다"],
+        result: () => {
+            if (!visionRecovered) {
+                return "어두워서 볼 수 없다.";
+            }
+            return "어디를 살펴보겠습니까?\n왼쪽. 오른쪽. 앞. 뒤. 나.";
+        }
+    },
+    {
+        keys: ["왼쪽을 살펴본다"],
+        result: "세면대와 변기가 보인다."
+    },
+    {
+        keys: ["오른쪽을 살펴본다", "오른쪽"],
+        result: "한 남성이 쓰러져 있다."
+    },
+    {
+        keys: ["앞을 살펴본다", "앞"],
+        result: "방문이 보인다."
+    },
+    {
+        keys: ["뒤를 살펴본다", "뒤"],
+        result: "손목 하나가 들어갈 정도로 작은 창문이 보인다."
+    },
+    {
+        keys: ["나를 살펴본다", "나"],
+        result: "아쉽게도 현재 거울이 없어 나의 얼굴을 보지 못한다."
+    },
+    {
+        keys: ["소리를 친다", "도움을 요청한다"],
         result: () => {
             gameOver = true;
             return "당신은 큰소리로 도와주세요라고 외친다.\n쿵쿵대는 소리와 함께 방문이 열린다.\n\"그 입을 꼬매서 시끄러운 입으로 다신 못 말하게 해주지.\"\n\nGAME OVER";
         }
-    },
-    {
-        keys: ["기억"],
-        result: "아직 머리 속이 흐릿해서 잘 기억이 나지 않는다..\n한가지 단어가 떠오른다.\n베개.."
     }
 ];
 
-input.addEventListener("keydown", e => {
-    if (e.key !== "Enter" || typing || gameOver) return;
+function submit() {
+    if (isTyping || gameOver) return;
 
     const value = input.value.trim();
-    if (!value) return;
     input.value = "";
-
-    game.innerHTML += `\n> ${value}\n`;
-    game.scrollTop = game.scrollHeight;
 
     let action = actions.find(a =>
         a.keys.some(k => value.includes(k))
@@ -187,12 +169,14 @@ input.addEventListener("keydown", e => {
         return;
     }
 
-    const result = typeof action.result === "function"
+    let resultText = typeof action.result === "function"
         ? action.result()
         : action.result;
 
-    typeText(result);
-});
+    typeText(resultText);
+}
+
+startGame();
 </script>
 
 </body>
