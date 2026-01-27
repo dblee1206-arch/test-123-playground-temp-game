@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+2<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -167,5 +167,43 @@ input.addEventListener("keydown", e => {
 });
 </script>
 
+<!-- 게임 오버 영상 -->
+<video id="gameOverVideo" playsinline muted>
+  <source src="gameover.mp4" type="video/mp4">
+</video>
 </body>
 </html>
+function triggerGameOver() {
+  const video = document.getElementById("gameOverVideo");
+
+  // 화면 흔들림 시작
+  document.body.classList.add("shake");
+
+  // 영상 표시
+  video.style.display = "block";
+  video.currentTime = 0;
+  video.play();
+
+  // 영상 끝나면 멈춤
+  video.onended = () => {
+    document.body.classList.remove("shake");
+  };
+}
+
+@keyframes shake {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(-5px, -5px); }
+  20% { transform: translate(5px, -5px); }
+  30% { transform: translate(-5px, 5px); }
+  40% { transform: translate(5px, 5px); }
+  50% { transform: translate(-3px, 3px); }
+  60% { transform: translate(3px, -3px); }
+  70% { transform: translate(-2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  90% { transform: translate(-1px, 1px); }
+  100% { transform: translate(0, 0); }
+}
+
+.shake {
+  animation: shake 0.6s infinite;
+}
