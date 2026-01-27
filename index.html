@@ -1,71 +1,30 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>Story RPG</title>
-  <style>
-    body {
-      margin: 0;
-      background: black;
-      color: white;
-      font-size: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      text-align: center;
-    }
+import express from "express";
+import fetch from "node-fetch";
 
-    #game {
-      width: 90%;
-      max-width: 600px;
-    }
+const app = express();
+app.use(express.json());
+app.use(express.static("public"));
 
-    #startMessage {
-      opacity: 0.8;
-    }
-  </style>
-</head>
-<body>
+app.post("/chat", async (req, res) => {
+  const userMessage = req.body.message;
 
-<div id="game">
-  <div id="startMessage">화면을 터치하세요</div>
-  <div id="text"></div>
-</div>
-
-<script>
-  const story = [
-    "늦은 오후, 도서관의 공기는 언제나와 같이 묘하게 눅눅했다.",
-    "",
-    "오래된 책 냄새와 형광등이 내뿜는 희미한 열기, 그리고 시험기간을 앞둔 학생들의 한숨이 뒤섞여 묵직한 공기를 만들고 있었다.",
-    "",
-    "그는 고개를 떨군 채 노트북 화면을 뚫어져라 바라보고 있었다."
-    // ← 네 글 계속 그대로 추가
-  ];
-
-  let index = 0;
-  let hasStarted = false;
-
-  const textDiv = document.getElementById("text");
-  const startMessage = document.getElementById("startMessage");
-
-  document.body.addEventListener("click", () => {
-    // 첫 터치
-    if (!hasStarted) {
-      hasStarted = true;
-      startMessage.style.display = "none";
-      textDiv.textContent = story[index];
-      index++;
-      return;
-    }
-
-    // 이후 터치
-    if (index < story.length) {
-      textDiv.textContent = story[index];
-      index++;
-    }
+  const r = await fetch("https://api.openai.com/v1/chat/completions", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer YOUR_API_KEY`
+    },
+    body:JSON.stringify({
+      model:"gpt-4.1-mini",
+      messages:[
+        {role:"system", content:"너는 미스터리 게임의 NPC다. 분위기를 유지해라."},
+        {role:"user", content:userMessage}
+      ]
+    })
   });
-</script>
 
-</body>
-</html>
+  const d = await r.json();
+  res.json({reply:d.choices[0].message.content});
+});
+
+app.listen(3000);
