@@ -1,30 +1,78 @@
-import express from "express";
-import fetch from "node-fetch";
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hybrid Dialogue</title>
+<style>
+  body{margin:0;background:#000;color:#fff;font-family:sans-serif}
+  #wrap{padding:12px}
+  #log{min-height:60vh}
+  .me{opacity:.9}
+  .npc{opacity:.95}
+  #ui{display:flex;gap:6px}
+  input{flex:1}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="log"></div>
+  <div id="ui">
+    <button onclick="setMode('story')">스토리</button>
+    <button onclick="setMode('free')">자유</button>
+    <input id="msg" placeholder="말해보세요"/>
+    <button onclick="send()">전송</button>
+  </div>
+</div>
 
-const app = express();
-app.use(express.json());
-app.use(express.static("public"));
+<script>
+let mode = "story"; // story | free
+const log = document.getElementById("log");
 
-app.post("/chat", async (req, res) => {
-  const userMessage = req.body.message;
+function setMode(m){ mode=m; print(`모드 전환: ${m}`, "npc"); }
 
-  const r = await fetch("https://api.openai.com/v1/chat/completions", {
+function print(t, cls){
+  const p=document.createElement("p");
+  p.className=cls;
+  p.textContent=t;
+  log.appendChild(p);
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+// ---- 스토리용(규칙 AI)
+function storyAI(text){
+  if(text.includes("책")) return "그 책을 어디서 봤지?";
+  if(text.includes("도서관")) return "이 시간의 도서관은 조용하지.";
+  if(text.includes("사건")) return "번호가 붙은 사건은 보통 숨겨진다.";
+  return "…그건 아직 말할 수 없어.";
+}
+
+// ---- 자유대화(API)
+async function freeAI(text){
+  const r = await fetch("/chat", {
     method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization":`Bearer YOUR_API_KEY`
-    },
-    body:JSON.stringify({
-      model:"gpt-4.1-mini",
-      messages:[
-        {role:"system", content:"너는 미스터리 게임의 NPC다. 분위기를 유지해라."},
-        {role:"user", content:userMessage}
-      ]
-    })
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:text})
   });
-
   const d = await r.json();
-  res.json({reply:d.choices[0].message.content});
-});
+  return d.reply;
+}
 
-app.listen(3000);
+async function send(){
+  const input=document.getElementById("msg");
+  const text=input.value.trim();
+  if(!text) return;
+  print("나: "+text, "me");
+  input.value="";
+
+  if(mode==="story"){
+    print("상대: "+storyAI(text), "npc");
+  }else{
+    print("상대: …", "npc");
+    const reply = await freeAI(text);
+    log.lastChild.textContent = "상대: "+reply;
+  }
+}
+</script>
+</body>
+</html>
