@@ -3,113 +3,168 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BLACK</title>
+<title>탈출</title>
 <style>
-  body {
-    margin: 0;
-    background: black;
-    color: white;
-    font-family: monospace;
-  }
-  #game {
-    padding: 20px;
-    min-height: 100vh;
-    box-sizing: border-box;
-  }
-  #log p {
-    margin: 0 0 10px 0;
-    line-height: 1.6;
-  }
-  #inputArea {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: black;
-    padding: 15px;
-    box-sizing: border-box;
-    border-top: 1px solid #333;
-  }
-  input {
-    width: 100%;
-    background: black;
-    color: white;
-    border: none;
-    outline: none;
-    font-size: 16px;
-  }
+    body {
+        margin: 0;
+        background: black;
+        color: white;
+        font-family: "Noto Sans KR", sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+    #story {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+    }
+    #inputArea {
+        display: flex;
+        border-top: 1px solid #333;
+    }
+    input {
+        flex: 1;
+        padding: 15px;
+        font-size: 16px;
+        background: black;
+        color: white;
+        border: none;
+        outline: none;
+    }
+    button {
+        padding: 15px;
+        background: #111;
+        color: white;
+        border: none;
+        font-size: 16px;
+    }
 </style>
 </head>
 <body>
 
-<div id="game">
-  <div id="log"></div>
-</div>
+<div id="story"></div>
 
 <div id="inputArea">
-  <input id="command" placeholder="행동을 입력하세요" autocomplete="off">
+    <input id="command" placeholder="행동을 입력하세요" autocomplete="off">
+    <button onclick="submitCommand()">▶</button>
 </div>
 
 <script>
-const log = document.getElementById("log");
+const story = document.getElementById("story");
 const input = document.getElementById("command");
 
-let state = {
-  vision: false,
-  foundObject: false
-};
+let visionRecovered = false;
+let gameOver = false;
 
-function print(text) {
-  const p = document.createElement("p");
-  p.textContent = text;
-  log.appendChild(p);
-  window.scrollTo(0, document.body.scrollHeight);
+// 타자 효과
+function typeText(text, callback) {
+    let i = 0;
+    const interval = setInterval(() => {
+        story.innerHTML += text.charAt(i);
+        story.scrollTop = story.scrollHeight;
+        i++;
+        if (i >= text.length) {
+            clearInterval(interval);
+            story.innerHTML += "\n\n";
+            if (callback) callback();
+        }
+    }, 30);
 }
 
-// 초기 상태
-print("아무것도 보이지 않는다.");
-print("눈을 뜨고 있는지조차 확신할 수 없다.");
+// 초기 문장
+typeText("아무것도 보이지 않는다.");
+typeText("눈을 뜨고 있는지조차 확신할 수 없다.");
 
-input.addEventListener("keydown", e => {
-  if (e.key !== "Enter") return;
-  const cmd = input.value.trim();
-  if (!cmd) return;
+function submitCommand() {
+    if (gameOver) return;
 
-  print("> " + cmd);
-  input.value = "";
+    const cmd = input.value.trim();
+    if (!cmd) return;
+    input.value = "";
 
-  handleCommand(cmd);
-});
+    story.innerHTML += `> ${cmd}\n`;
+    story.scrollTop = story.scrollHeight;
+
+    handleCommand(cmd);
+}
 
 function handleCommand(cmd) {
-
-  // 시야 확보 전
-  if (!state.vision) {
-    if (cmd.includes("손") || cmd.includes("뻗")) {
-      state.vision = true;
-      print("어둠 속에서 무언가에 손끝이 닿는다.");
-      print("차가운 바닥의 감각이 서서히 인식되기 시작한다.");
-      print("아직 흐릿하지만, 공간의 윤곽이 느껴진다.");
-      return;
-    } else {
-      print("아무 일도 일어나지 않는다.");
-      return;
+    // 게임 오버 행동
+    if (cmd.includes("소리") || cmd.includes("도움")) {
+        typeText("당신은 큰소리로 도와주세요라고 외친다.");
+        typeText("그러자 쿵쿵대는 소리와 함께 방문이 열린다.");
+        typeText("“그 입을 꼬매서 시끄러운 입으로 다신 못 말하게 해주지.”");
+        typeText("GAME OVER");
+        gameOver = true;
+        return;
     }
-  }
 
-  // 시야 확보 후
-  if (state.vision && !state.foundObject) {
-    if (cmd.includes("더듬") || cmd.includes("찾")) {
-      state.foundObject = true;
-      print("바닥에 떨어진 물건을 발견했다.");
-      print("손에 쥔 순간, 기억의 파편이 스친다.");
-      return;
+    // 행동 매핑
+    const actions = [
+        { keys: ["눈을 뜬다"], text: "눈을 떴지만 아무것도 보이지 않는다." },
+        { keys: ["눈을 깜빡"], text: "아무 일도 일어나지 않는다." },
+        { keys: ["몸", "움직"], text: "양손은 움직일 수 있는듯 하다." },
+        { keys: ["손"], text: "손가락을 쥐어다 핀다." },
+        { keys: ["발"], text: "무언가에 구속되어 있는 듯하다.." },
+        { keys: ["숨", "호흡"], text: "숨을 들이마시고 내쉬었다.\n... 아무 일도 일어나지 않는다." },
+        { keys: ["심장"], text: "심장이 뛰고 있다." },
+        { keys: ["귀", "소리"], text: "작게 흥얼거리는 휫바람 소리가 들린다." },
+        { keys: ["냄새"], text: "아무 냄새도 나지 않는다." },
+        { keys: ["기억", "마지막"], text: "아직 머리 속이 흐릿해서 잘 기억이 나지않는다..\n한가지 단어가 떠오른다.\n베개.." },
+    ];
+
+    // 주변 살피기
+    if (cmd.includes("주변") || cmd.includes("주위")) {
+        if (!visionRecovered) {
+            visionRecovered = true;
+            typeText("어두워서 볼 수 없다.");
+        } else {
+            typeText("어디를 살펴보겠습니까?\n왼쪽. 오른쪽. 앞. 뒤. 나.");
+        }
+        return;
     }
-  }
 
-  // 기본 반응
-  print("그 행동은 의미 없는 듯하다.");
+    if (visionRecovered) {
+        if (cmd.includes("왼쪽")) {
+            typeText("세면대와 변기가 보인다.");
+            return;
+        }
+        if (cmd.includes("오른쪽")) {
+            typeText("한 남성이 쓰러져 있다.");
+            return;
+        }
+        if (cmd.includes("앞")) {
+            typeText("방문이 보인다.");
+            return;
+        }
+        if (cmd.includes("뒤")) {
+            typeText("손목 하나가 들어갈 정도로 작은 창문이 보인다.");
+            return;
+        }
+        if (cmd === "나") {
+            typeText("아쉽게도 현재 거울이 없어 나의 얼굴을 보지 못한다.");
+            return;
+        }
+    }
+
+    // 일반 행동 처리
+    for (const act of actions) {
+        if (act.keys.some(k => cmd.includes(k))) {
+            typeText(act.text);
+            return;
+        }
+    }
+
+    // 기본 반응
+    typeText("아무 일도 일어나지 않는다.");
 }
+
+// 엔터키 입력
+input.addEventListener("keydown", e => {
+    if (e.key === "Enter") submitCommand();
+});
 </script>
 
 </body>
