@@ -3,57 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Story RPG</title>
+<title>BLACK</title>
 <style>
   body {
     margin: 0;
     background: black;
     color: white;
-    font-family: sans-serif;
+    font-family: monospace;
   }
   #game {
     padding: 20px;
     min-height: 100vh;
+    box-sizing: border-box;
   }
-  #hint {
-    opacity: 0.6;
-    font-size: 14px;
-    margin-top: 20px;
+  #log p {
+    margin: 0 0 10px 0;
+    line-height: 1.6;
+  }
+  #inputArea {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: black;
+    padding: 15px;
+    box-sizing: border-box;
+    border-top: 1px solid #333;
+  }
+  input {
+    width: 100%;
+    background: black;
+    color: white;
+    border: none;
+    outline: none;
+    font-size: 16px;
   }
 </style>
 </head>
 <body>
 
 <div id="game">
-  <div id="text"></div>
-  <div id="hint">화면을 터치하세요</div>
+  <div id="log"></div>
+</div>
+
+<div id="inputArea">
+  <input id="command" placeholder="행동을 입력하세요" autocomplete="off">
 </div>
 
 <script>
-const story = [
-  "늦은 오후, 도서관의 공기는 언제나와 같이 묘하게 눅눅했다.",
-  "오래된 책 냄새와 형광등의 열기가 뒤섞여 있었다.",
-  "그는 고개를 떨군 채 노트북 화면을 바라보고 있었다.",
-  "과제는 끝났다. 이제 좀 쉴 수 있겠네.",
-  "…그때, 구석 서가에서 이상한 책 한 권이 눈에 들어왔다."
-];
+const log = document.getElementById("log");
+const input = document.getElementById("command");
 
-let index = 0;
-const textDiv = document.getElementById("text");
-const hint = document.getElementById("hint");
+let state = {
+  vision: false,
+  foundObject: false
+};
 
-function nextText() {
-  if (index === 0) hint.style.display = "none";
-
-  if (index < story.length) {
-    const p = document.createElement("p");
-    p.textContent = story[index];
-    textDiv.appendChild(p);
-    index++;
-  }
+function print(text) {
+  const p = document.createElement("p");
+  p.textContent = text;
+  log.appendChild(p);
+  window.scrollTo(0, document.body.scrollHeight);
 }
 
-document.body.addEventListener("click", nextText);
+// 초기 상태
+print("아무것도 보이지 않는다.");
+print("눈을 뜨고 있는지조차 확신할 수 없다.");
+
+input.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  const cmd = input.value.trim();
+  if (!cmd) return;
+
+  print("> " + cmd);
+  input.value = "";
+
+  handleCommand(cmd);
+});
+
+function handleCommand(cmd) {
+
+  // 시야 확보 전
+  if (!state.vision) {
+    if (cmd.includes("손") || cmd.includes("뻗")) {
+      state.vision = true;
+      print("어둠 속에서 무언가에 손끝이 닿는다.");
+      print("차가운 바닥의 감각이 서서히 인식되기 시작한다.");
+      print("아직 흐릿하지만, 공간의 윤곽이 느껴진다.");
+      return;
+    } else {
+      print("아무 일도 일어나지 않는다.");
+      return;
+    }
+  }
+
+  // 시야 확보 후
+  if (state.vision && !state.foundObject) {
+    if (cmd.includes("더듬") || cmd.includes("찾")) {
+      state.foundObject = true;
+      print("바닥에 떨어진 물건을 발견했다.");
+      print("손에 쥔 순간, 기억의 파편이 스친다.");
+      return;
+    }
+  }
+
+  // 기본 반응
+  print("그 행동은 의미 없는 듯하다.");
+}
 </script>
 
 </body>
