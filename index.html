@@ -1,209 +1,184 @@
-2<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>탈출</title>
+
 <style>
-    body {
-        margin: 0;
-        background: black;
-        color: white;
-        font-family: "Noto Sans KR", sans-serif;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-    }
-    #story {
-        flex: 1;
-        padding: 20px;
-        overflow-y: auto;
-        white-space: pre-wrap;
-    }
-    #inputArea {
-        display: flex;
-        border-top: 1px solid #333;
-    }
-    input {
-        flex: 1;
-        padding: 15px;
-        font-size: 16px;
-        background: black;
-        color: white;
-        border: none;
-        outline: none;
-    }
-    button {
-        padding: 15px;
-        background: #111;
-        color: white;
-        border: none;
-        font-size: 16px;
-    }
-</style>
-</head>
-<body>
-
-<div id="story"></div>
-
-<div id="inputArea">
-    <input id="command" placeholder="행동을 입력하세요" autocomplete="off">
-    <button onclick="submitCommand()">▶</button>
-</div>
-
-<script>
-const story = document.getElementById("story");
-const input = document.getElementById("command");
-
-let visionRecovered = false;
-let gameOver = false;
-
-// 타자 효과
-function typeText(text, callback) {
-    let i = 0;
-    const interval = setInterval(() => {
-        story.innerHTML += text.charAt(i);
-        story.scrollTop = story.scrollHeight;
-        i++;
-        if (i >= text.length) {
-            clearInterval(interval);
-            story.innerHTML += "\n\n";
-            if (callback) callback();
-        }
-    }, 30);
+body {
+  margin: 0;
+  background: black;
+  color: #eaeaea;
+  font-family: monospace;
+  overflow: hidden;
 }
 
-// 초기 문장
-typeText("아무것도 보이지 않는다.");
-typeText("눈을 뜨고 있는지조차 확신할 수 없다.");
-
-function submitCommand() {
-    if (gameOver) return;
-
-    const cmd = input.value.trim();
-    if (!cmd) return;
-    input.value = "";
-
-    story.innerHTML += `> ${cmd}\n`;
-    story.scrollTop = story.scrollHeight;
-
-    handleCommand(cmd);
+#game {
+  padding: 20px;
 }
 
-function handleCommand(cmd) {
-    // 게임 오버 행동
-    if (cmd.includes("소리") || cmd.includes("도움")) {
-        typeText("당신은 큰소리로 도와주세요라고 외친다.");
-        typeText("그러자 쿵쿵대는 소리와 함께 방문이 열린다.");
-        typeText("“그 입을 꼬매서 시끄러운 입으로 다신 못 말하게 해주지.”");
-        typeText("GAME OVER");
-        gameOver = true;
-        return;
-    }
-
-    // 행동 매핑
-    const actions = [
-        { keys: ["눈을 뜬다"], text: "눈을 떴지만 아무것도 보이지 않는다." },
-        { keys: ["눈을 깜빡"], text: "아무 일도 일어나지 않는다." },
-        { keys: ["몸", "움직"], text: "양손은 움직일 수 있는듯 하다." },
-        { keys: ["손"], text: "손가락을 쥐어다 핀다." },
-        { keys: ["발"], text: "무언가에 구속되어 있는 듯하다.." },
-        { keys: ["숨", "호흡"], text: "숨을 들이마시고 내쉬었다.\n... 아무 일도 일어나지 않는다." },
-        { keys: ["심장"], text: "심장이 뛰고 있다." },
-        { keys: ["귀", "소리"], text: "작게 흥얼거리는 휫바람 소리가 들린다." },
-        { keys: ["냄새"], text: "아무 냄새도 나지 않는다." },
-        { keys: ["기억", "마지막"], text: "아직 머리 속이 흐릿해서 잘 기억이 나지않는다..\n한가지 단어가 떠오른다.\n베개.." },
-    ];
-
-    // 주변 살피기
-    if (cmd.includes("주변") || cmd.includes("주위")) {
-        if (!visionRecovered) {
-            visionRecovered = true;
-            typeText("어두워서 볼 수 없다.");
-        } else {
-            typeText("어디를 살펴보겠습니까?\n왼쪽. 오른쪽. 앞. 뒤. 나.");
-        }
-        return;
-    }
-
-    if (visionRecovered) {
-        if (cmd.includes("왼쪽")) {
-            typeText("세면대와 변기가 보인다.");
-            return;
-        }
-        if (cmd.includes("오른쪽")) {
-            typeText("한 남성이 쓰러져 있다.");
-            return;
-        }
-        if (cmd.includes("앞")) {
-            typeText("방문이 보인다.");
-            return;
-        }
-        if (cmd.includes("뒤")) {
-            typeText("손목 하나가 들어갈 정도로 작은 창문이 보인다.");
-            return;
-        }
-        if (cmd === "나") {
-            typeText("아쉽게도 현재 거울이 없어 나의 얼굴을 보지 못한다.");
-            return;
-        }
-    }
-
-    // 일반 행동 처리
-    for (const act of actions) {
-        if (act.keys.some(k => cmd.includes(k))) {
-            typeText(act.text);
-            return;
-        }
-    }
-
-    // 기본 반응
-    typeText("아무 일도 일어나지 않는다.");
+#text {
+  min-height: 60vh;
+  white-space: pre-line;
 }
 
-// 엔터키 입력
-input.addEventListener("keydown", e => {
-    if (e.key === "Enter") submitCommand();
-});
-</script>
-
-<!-- 게임 오버 영상 -->
-<video id="gameOverVideo" playsinline muted>
-  <source src="gameover.mp4" type="video/mp4">
-</video>
-</body>
-</html>
-function triggerGameOver() {
-  const video = document.getElementById("gameOverVideo");
-
-  // 화면 흔들림 시작
-  document.body.classList.add("shake");
-
-  // 영상 표시
-  video.style.display = "block";
-  video.currentTime = 0;
-  video.play();
-
-  // 영상 끝나면 멈춤
-  video.onended = () => {
-    document.body.classList.remove("shake");
-  };
+#inputBox {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  background: black;
 }
 
+input {
+  width: 100%;
+  padding: 10px;
+  background: black;
+  color: white;
+  border: 1px solid #555;
+  font-size: 16px;
+}
+
+/* ===== 타자 효과 커서 ===== */
+.cursor::after {
+  content: "▌";
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* ===== 화면 흔들림 ===== */
 @keyframes shake {
-  0% { transform: translate(0, 0); }
-  10% { transform: translate(-5px, -5px); }
-  20% { transform: translate(5px, -5px); }
-  30% { transform: translate(-5px, 5px); }
-  40% { transform: translate(5px, 5px); }
-  50% { transform: translate(-3px, 3px); }
-  60% { transform: translate(3px, -3px); }
-  70% { transform: translate(-2px, 2px); }
-  80% { transform: translate(2px, -2px); }
-  90% { transform: translate(-1px, 1px); }
-  100% { transform: translate(0, 0); }
+  0% { transform: translate(0,0); }
+  20% { transform: translate(-6px,4px); }
+  40% { transform: translate(6px,-4px); }
+  60% { transform: translate(-4px,6px); }
+  80% { transform: translate(4px,-6px); }
+  100% { transform: translate(0,0); }
 }
 
 .shake {
-  animation: shake 0.6s infinite;
+  animation: shake 0.5s infinite;
 }
+
+/* ===== 게임오버 영상 ===== */
+#gameOverVideo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  display: none;
+  z-index: 999;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+  <div id="text"></div>
+</div>
+
+<div id="inputBox">
+  <input id="command" placeholder="행동을 입력하세요">
+</div>
+
+<video id="gameOverVideo" muted playsinline>
+  <source src="gameover.mp4" type="video/mp4">
+</video>
+
+<script>
+const textBox = document.getElementById("text");
+const input = document.getElementById("command");
+const video = document.getElementById("gameOverVideo");
+
+let typing = false;
+
+/* ===== 타자 출력 ===== */
+function typeText(text, callback) {
+  typing = true;
+  let i = 0;
+  const line = document.createElement("div");
+  line.classList.add("cursor");
+  textBox.appendChild(line);
+
+  const interval = setInterval(() => {
+    line.textContent += text[i];
+    i++;
+    if (i >= text.length) {
+      clearInterval(interval);
+      line.classList.remove("cursor");
+      typing = false;
+      textBox.scrollTop = textBox.scrollHeight;
+      if (callback) callback();
+    }
+  }, 30);
+}
+
+/* ===== 초기 텍스트 ===== */
+typeText("아무것도 보이지 않는다.");
+typeText("\n눈을 뜨고 있는지조차 확신할 수 없다.");
+
+/* ===== 게임오버 ===== */
+function triggerGameOver() {
+  document.body.classList.add("shake");
+  video.style.display = "block";
+  video.currentTime = 0;
+  video.play();
+  input.disabled = true;
+}
+
+/* ===== 입력 처리 ===== */
+input.addEventListener("keydown", e => {
+  if (e.key !== "Enter" || typing) return;
+
+  const cmd = input.value.trim();
+  input.value = "";
+
+  let response = "아무 일도 일어나지 않는다.";
+
+  if (cmd.includes("눈")) {
+    response = "눈을 떴지만 아무것도 보이지 않는다.";
+  }
+  else if (cmd.includes("깜빡")) {
+    response = "아무 일도 일어나지 않는다.";
+  }
+  else if (cmd.includes("몸")) {
+    response = "양손은 움직일 수 있는듯 하다.";
+  }
+  else if (cmd.includes("손")) {
+    response = "손가락을 쥐었다 폈다.";
+  }
+  else if (cmd.includes("발")) {
+    response = "무언가에 구속되어 있는 듯하다..";
+  }
+  else if (cmd.includes("숨") || cmd.includes("호흡")) {
+    response = "숨을 들이마시고 내쉬었다.\n... 아무 일도 일어나지 않는다.";
+  }
+  else if (cmd.includes("심장")) {
+    response = "심장이 뛰고 있다.";
+  }
+  else if (cmd.includes("소리") || cmd.includes("도움")) {
+    typeText(
+      "당신은 큰 소리로 도와주세요라고 외친다.\n" +
+      "쿵쿵대는 소리와 함께 방문이 열린다.\n" +
+      "\"그 입을 꼬매서 시끄러운 입으로 다신 못 말하게 해주지.\"",
+      triggerGameOver
+    );
+    return;
+  }
+  else if (cmd.includes("기억")) {
+    response = "머릿속이 흐릿하다.\n한 가지 단어가 떠오른다.\n베개..";
+  }
+
+  typeText("\n" + response);
+});
+</script>
+
+</body>
+</html>
