@@ -1,0 +1,34 @@
+let mood = 0; // 캐릭터 감정 수치
+
+function choose(action) {
+  const dialogue = document.getElementById("dialogue");
+
+  if (action === "greet") {
+    mood += 1;
+    dialogue.innerText = "어… 반가워!";
+  }
+
+  if (action === "ignore") {
+    mood -= 1;
+    dialogue.innerText = "왜 아무 말도 안 해…?";
+  }
+}
+
+function submitText() {
+  const input = document.getElementById("inputText").value;
+  const dialogue = document.getElementById("dialogue");
+
+  if (input.includes("안녕")) {
+    mood += 1;
+    dialogue.innerText = "안녕! 그렇게 말해주니까 좋아 😊";
+  } 
+  else if (input.includes("꺼져")) {
+    mood -= 2;
+    dialogue.innerText = "……상처받았어.";
+  } 
+  else {
+    dialogue.innerText = "그게 무슨 뜻이야?";
+  }
+
+  document.getElementById("inputText").value = "";
+}
