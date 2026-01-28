@@ -91,3 +91,23 @@ function gameLoop() {
 let beatY = 0;
 let beatActive = false;
 const beatSpeed = 5;
+
+// 비트 생성
+if (!beatActive && Date.now() - lastBeat > beatInterval) {
+  beatActive = true;
+  beatY = 0;
+  lastBeat = Date.now();
+}
+
+// 비트 이동
+if (beatActive) {
+  beatY += beatSpeed;
+  if (beatY > 200) {
+    beatActive = false;
+
+    // 비트 놓침 = MISS
+    miss++;
+    statusText.textContent = `틀린 횟수: ${miss} / 3`;
+    if (miss >= 3) endGame();
+  }
+}
