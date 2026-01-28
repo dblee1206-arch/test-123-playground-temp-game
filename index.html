@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <title>선택지 게임</title>
+
+  <!-- 줌 완전 차단 -->
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0,
-        maximum-scale=1.0, user-scalable=no" />
-  <title>선택지 게임</title>
+        maximum-scale=1.0, user-scalable=no">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <div id="game">
     <div id="background"></div>
-    <img id="character" src="assets/character.png">
+
+    <img id="character" src="assets/character_normal.png">
 
     <div id="ui">
-      <p id="dialogue">너 지금 무슨 생각해?</p>
+      <p id="dialogue">……너, 무슨 생각 해?</p>
 
       <div id="choices">
         <button onclick="selectChoice(1)">괜찮아?</button>
