@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0,
+        maximum-scale=1.0, user-scalable=no" />
   <title>선택지 게임</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="game">
+    <div id="background"></div>
+    <img id="character" src="assets/character.png">
 
-<div class="game">
-  <h2 id="status">기분: 50</h2>
+    <div id="ui">
+      <p id="dialogue">너 지금 무슨 생각해?</p>
 
-  <img id="character" src="images/normal.png">
+      <div id="choices">
+        <button onclick="selectChoice(1)">괜찮아?</button>
+        <button onclick="selectChoice(2)">왜 그렇게 예민해?</button>
+        <button onclick="selectChoice(3)">아무 말도 안 한다</button>
+      </div>
 
-  <p id="dialogue">캐릭터: "왜 그런 말을 한 거야?"</p>
-
-  <div class="choices">
-    <button onclick="choose(1)">미안해</button>
-    <button onclick="choose(2)">별 뜻 없었어</button>
-    <button onclick="choose(3)">가만히 있는다</button>
+      <p id="mood">기분: 50</p>
+    </div>
   </div>
-</div>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
