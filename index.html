@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>Photo Jump Rhythm Game</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>캐릭터 상호작용 게임</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>🎵 Photo Jump Game</h1>
+  <div id="game">
+    <div id="character">🙂</div>
 
-<input type="file" id="upload" accept="image/*">
-<br><br>
+    <div id="dialogue">안녕… 너 누구야?</div>
 
-<button id="startBtn">게임 시작</button>
+    <div id="choices">
+      <button onclick="choose('greet')">인사한다</button>
+      <button onclick="choose('ignore')">무시한다</button>
+    </div>
 
-<p id="status">틀린 횟수: 0 / 3</p>
+    <input id="inputText" placeholder="말하거나 행동을 입력하세요">
+    <button onclick="submitText()">입력</button>
+  </div>
 
-<canvas id="game" width="300" height="300"></canvas>
-
-<audio id="music" src="music.mp3"></audio>
-
-<script src="game.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
