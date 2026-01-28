@@ -1,186 +1,25 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>내 캐릭터 키우기</title>
-
-<style>
-body {
-  margin: 0;
-  background: #111;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-family: sans-serif;
-}
-
-/* 🔒 게임 화면 고정 */
-#container {
-  width: 360px;
-  height: 640px;
-  background: #fff;
-  border-radius: 20px;
-  padding: 15px;
-  box-sizing: border-box;
-  text-align: center;
-  position: relative;
-}
-
-/* 암전 */
-#fade {
-  position: absolute;
-  inset: 0;
-  background: black;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 2s;
-  border-radius: 20px;
-}
-
-img {
-  width: 180px;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 20px;
-  border: 2px solid #333;
-}
-
-button {
-  padding: 10px;
-  margin: 5px;
-  width: 80%;
-}
-</style>
+  <meta charset="UTF-8" />
+  <title>Photo Jump Rhythm Game</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-<div id="container">
-  <div id="fade"></div>
+<h1>🎵 Photo Jump Game</h1>
 
-  <h2>🐣 캐릭터 키우기</h2>
+<input type="file" id="upload" accept="image/*">
+<br><br>
 
-  <!-- 시작 -->
-  <div id="start">
-    <input id="nameInput" placeholder="이름"><br><br>
-    <input type="file" id="imageInput" accept="image/*"><br><br>
-    <button onclick="startGame()">시작</button>
-  </div>
+<button id="startBtn">게임 시작</button>
 
-  <!-- 게임 -->
-  <div id="game" style="display:none;">
-    <h3 id="petName"></h3>
-    <img id="petImage"><br><br>
+<p id="status">틀린 횟수: 0 / 3</p>
 
-    ❤️ 체력 <span id="hp">100</span><br>
-    🍗 배고픔 <span id="hunger">100</span><br>
-    🚽 화장실 <span id="toilet">0</span><br><br>
+<canvas id="game" width="300" height="300"></canvas>
 
-    <button onclick="feed()">밥 주기</button>
-    <button onclick="bathroom()">화장실</button>
-  </div>
-</div>
+<audio id="music" src="music.mp3"></audio>
 
-<script>
-let hp=100, hunger=100, toilet=0;
-let petName="", petImage="", timer;
-
-/* 저장 */
-function saveGame(){
-  localStorage.setItem("petSave", JSON.stringify({
-    hp, hunger, toilet, petName, petImage
-  }));
-}
-
-/* 불러오기 */
-function loadGame(){
-  const data = localStorage.getItem("petSave");
-  if(!data) return;
-
-  const s = JSON.parse(data);
-  hp=s.hp; hunger=s.hunger; toilet=s.toilet;
-  petName=s.petName; petImage=s.petImage;
-
-  document.getElementById("petName").innerText = petName;
-  document.getElementById("petImage").src = petImage;
-
-  document.getElementById("start").style.display="none";
-  document.getElementById("game").style.display="block";
-
-  updateUI();
-  timer=setInterval(updateStatus,3000);
-}
-
-/* 시작 */
-function startGame(){
-  const name = nameInput.value;
-  const file = imageInput.files[0];
-  if(!name || !file){
-    alert("이름이랑 사진 필요!");
-    return;
-  }
-
-  petName=name;
-  petNameEl = document.getElementById("petName");
-  petNameEl.innerText=name;
-
-  const reader = new FileReader();
-  reader.onload = e=>{
-    petImage=e.target.result;
-    document.getElementById("petImage").src=petImage;
-    saveGame();
-  };
-  reader.readAsDataURL(file);
-
-  start.style.display="none";
-  game.style.display="block";
-
-  timer=setInterval(updateStatus,3000);
-}
-
-function updateStatus(){
-  hunger-=5;
-  toilet+=5;
-  if(hunger<=0){ hunger=0; hp-=10; }
-
-  updateUI();
-  saveGame();
-  if(hp<=0) gameOver();
-}
-
-function feed(){
-  hunger=Math.min(100,hunger+20);
-  updateUI(); saveGame();
-}
-
-function bathroom(){
-  toilet=0;
-  updateUI(); saveGame();
-}
-
-function updateUI(){
-  hpEl.innerText=hp;
-  hungerEl.innerText=hunger;
-  toiletEl.innerText=toilet;
-}
-
-function gameOver(){
-  clearInterval(timer);
-  fade.style.opacity=1;
-  setTimeout(()=>{
-    alert("게임 오버…");
-    localStorage.removeItem("petSave");
-    location.reload();
-  },2000);
-}
-
-window.onload=loadGame;
-
-/* 캐시 */
-const hpEl=hp, hungerEl=hunger, toiletEl=toilet;
-</script>
-
+<script src="game.js"></script>
 </body>
 </html>
