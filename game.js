@@ -87,3 +87,7 @@ function gameLoop() {
   draw();
   requestAnimationFrame(gameLoop);
 }
+
+let beatY = 0;
+let beatActive = false;
+const beatSpeed = 5;
