@@ -1,152 +1,177 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>TEXT GAME</title>
+  <meta charset="UTF-8">
+  <title>내 캐릭터 키우기</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; }
 
-<style>
-body {
-  margin: 0;
-  background: black;
-  color: white;
-  font-family: monospace;
-  overflow: hidden;
-}
+    img {
+      width: 150px;
+      height: 150px;
+      border-radius: 20px;
+      object-fit: cover;
+    }
 
-#game {
-  padding: 20px;
-  min-height: 70vh;
-}
+    button { margin: 5px; padding: 10px; }
 
-#inputBox {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: #000;
-  border-top: 1px solid #333;
-  display: flex;
-}
-
-#command {
-  flex: 1;
-  padding: 15px;
-  font-size: 16px;
-  background: black;
-  color: white;
-  border: none;
-  outline: none;
-}
-
-#send {
-  width: 60px;
-  background: #111;
-  color: white;
-  border: none;
-}
-
-#gameOverVideo {
-  display: none;
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 10;
-}
-
-/* 화면 흔들림 */
-.shake {
-  animation: shake 0.5s infinite;
-}
-
-@keyframes shake {
-  0% { transform: translate(0,0); }
-  25% { transform: translate(-5px, 5px); }
-  50% { transform: translate(5px, -5px); }
-  75% { transform: translate(-5px, -5px); }
-  100% { transform: translate(0,0); }
-}
-</style>
+    /* 암전 화면 */
+    #fade {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 2s;
+    }
+  </style>
 </head>
-
 <body>
 
-<video id="gameOverVideo" src="gameover.mp4"></video>
+<div id="fade"></div>
 
-<div id="game"></div>
+<h1>🐣 내 캐릭터 키우기</h1>
 
-<div id="inputBox">
-  <input id="command" placeholder="행동을 입력하세요">
-  <button id="send">▶</button>
+<!-- 시작 화면 -->
+<div id="start">
+  <input type="text" id="nameInput" placeholder="이름 입력"><br><br>
+  <input type="file" id="imageInput" accept="image/*"><br><br>
+  <button onclick="startGame()">시작!</button>
+</div>
+
+<!-- 게임 화면 -->
+<div id="game" style="display:none;">
+  <h2 id="petName"></h2>
+  <img id="petImage"><br><br>
+
+  ❤️ 체력: <span id="hp">100</span><br>
+  🍗 배고픔: <span id="hunger">100</span><br>
+  🚽 화장실: <span id="toilet">0</span><br><br>
+
+  <button onclick="feed()">밥 주기</button>
+  <button onclick="bathroom()">화장실 보내기</button>
 </div>
 
 <script>
-const game = document.getElementById("game");
-const input = document.getElementById("command");
-const video = document.getElementById("gameOverVideo");
+let hp = 100;
+let hunger = 100;
+let toilet = 0;
+let petName = "";
+let petImage = "";
+let timer;
 
-const responses = {
-  "눈을 뜬다": "눈을 떴지만 아무것도 보이지 않는다.",
-  "눈을 깜빡인다": "아무 일도 일어나지 않는다.",
-  "손을 움직인다": "손가락을 쥐었다 폈다.",
-  "발을 움직인다": "무언가에 구속되어 있는 듯하다.",
-  "심장을 확인한다": "심장이 뛰고 있다.",
-  "소리를 친다": "당신은 큰소리로 외쳤다..."
-};
-
-function typeText(text) {
-  let i = 0;
-  const line = document.createElement("div");
-  game.appendChild(line);
-
-  const typing = setInterval(() => {
-    line.textContent += text[i];
-    i++;
-    if (i >= text.length) clearInterval(typing);
-  }, 40);
+/* 🔹 저장 */
+function saveGame() {
+  localStorage.setItem("petSave", JSON.stringify({
+    hp, hunger, toilet, petName, petImage
+  }));
 }
 
-function triggerGameOver() {
-  document.body.classList.add("shake");
-  video.style.display = "block";
-  video.currentTime = 0;
-  video.play();
+/* 🔹 불러오기 */
+function loadGame() {
+  const data = localStorage.getItem("petSave");
+  if (!data) return false;
 
-  video.onended = () => {
-    document.body.classList.remove("shake");
+  const save = JSON.parse(data);
+  hp = save.hp;
+  hunger = save.hunger;
+  toilet = save.toilet;
+  petName = save.petName;
+  petImage = save.petImage;
+
+  document.getElementById("petName").innerText = petName;
+  document.getElementById("petImage").src = petImage;
+
+  document.getElementById("start").style.display = "none";
+  document.getElementById("game").style.display = "block";
+
+  updateUI();
+  timer = setInterval(updateStatus, 3000);
+  return true;
+}
+
+/* 🔹 게임 시작 */
+function startGame() {
+  const name = document.getElementById("nameInput").value;
+  const file = document.getElementById("imageInput").files[0];
+  if (!name || !file) {
+    alert("이름이랑 사진 둘 다 필요해!");
+    return;
+  }
+
+  petName = name;
+  document.getElementById("petName").innerText = name;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    petImage = reader.result;
+    document.getElementById("petImage").src = petImage;
+    saveGame();
   };
+  reader.readAsDataURL(file);
+
+  document.getElementById("start").style.display = "none";
+  document.getElementById("game").style.display = "block";
+
+  timer = setInterval(updateStatus, 3000);
 }
 
-function handleCommand() {
-  const cmd = input.value.trim();
-  input.value = "";
+/* 🔹 상태 변화 */
+function updateStatus() {
+  hunger -= 5;
+  toilet += 5;
 
-  if (!cmd) return;
+  if (hunger <= 0) {
+    hunger = 0;
+    hp -= 10;
+  }
 
-  typeText("> " + cmd);
+  updateUI();
+  saveGame();
+
+  if (hp <= 0) {
+    gameOver();
+  }
+}
+
+/* 🔹 버튼 */
+function feed() {
+  hunger = Math.min(100, hunger + 20);
+  updateUI();
+  saveGame();
+}
+
+function bathroom() {
+  toilet = 0;
+  updateUI();
+  saveGame();
+}
+
+/* 🔹 UI */
+function updateUI() {
+  document.getElementById("hp").innerText = hp;
+  document.getElementById("hunger").innerText = hunger;
+  document.getElementById("toilet").innerText = toilet;
+}
+
+/* 🔹 게임 오버 + 암전 */
+function gameOver() {
+  clearInterval(timer);
+  document.getElementById("fade").style.opacity = 1;
 
   setTimeout(() => {
-    if (cmd === "도움을 요청한다" || cmd === "소리를 친다") {
-      typeText("문이 열리며 낮은 목소리가 들린다.");
-      triggerGameOver();
-      return;
-    }
-
-    if (responses[cmd]) {
-      typeText(responses[cmd]);
-    } else {
-      typeText("아무 일도 일어나지 않는다.");
-    }
-  }, 500);
+    alert("게임 오버… 😢");
+    localStorage.removeItem("petSave");
+    location.reload();
+  }, 2000);
 }
 
-document.getElementById("send").onclick = handleCommand;
-input.addEventListener("keydown", e => {
-  if (e.key === "Enter") handleCommand();
-});
-
-// 시작 문장
-typeText("아무것도 보이지 않는다.");
+/* 🔹 페이지 열리면 자동 불러오기 */
+window.onload = () => {
+  loadGame();
+};
 </script>
 
 </body>
