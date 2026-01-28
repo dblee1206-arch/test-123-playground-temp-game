@@ -2,25 +2,25 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>캐릭터 상호작용 게임</title>
+  <title>선택지 게임</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div id="game">
-    <div id="character">🙂</div>
+<div class="game">
+  <h2 id="status">기분: 50</h2>
 
-    <div id="dialogue">안녕… 너 누구야?</div>
+  <img id="character" src="images/normal.png">
 
-    <div id="choices">
-      <button onclick="choose('greet')">인사한다</button>
-      <button onclick="choose('ignore')">무시한다</button>
-    </div>
+  <p id="dialogue">캐릭터: "왜 그런 말을 한 거야?"</p>
 
-    <input id="inputText" placeholder="말하거나 행동을 입력하세요">
-    <button onclick="submitText()">입력</button>
+  <div class="choices">
+    <button onclick="choose(1)">미안해</button>
+    <button onclick="choose(2)">별 뜻 없었어</button>
+    <button onclick="choose(3)">가만히 있는다</button>
   </div>
+</div>
 
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
